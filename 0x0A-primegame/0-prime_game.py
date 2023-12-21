@@ -1,46 +1,23 @@
-def is_prime(num):
-    """Check if a number is prime."""
-    if num < 2:
-        return False
-    for i in range(2, int(num ** 0.5) + 1):
-        if num % i == 0:
-            return False
-    return True
-
-def generate_primes(n):
-    """Generate a list of primes up to n."""
-    primes = []
-    for i in range(2, n + 1):
-        if is_prime(i):
-            primes.append(i)
-    return primes
-
-def mark_multiples(nums, prime):
-    """Mark all multiples of prime as 0 in nums."""
-    for i in range(prime * 2, len(nums), prime):
-        nums[i] = 0
-
 def isWinner(x, nums):
+    """
+    Determines the winner of the prime number game.
+
+    Args:
+        x: The number of rounds.
+        nums: An array of values for n in each round.
+
+    Returns:
+        The name of the player who won the most rounds, or None if the winner cannot be determined.
+    """
+
     maria_wins = 0
     ben_wins = 0
 
     for n in nums:
-        primes = generate_primes(n + 1)
-        # Create a list of consecutive integers starting from 1 up to n
-        nums_list = [i for i in range(n + 1)]
-        
-        for prime in primes:
-            if prime > n:
-                break
-            mark_multiples(nums_list, prime)
-        
-        # Count the remaining numbers in the list after marking multiples
-        count = sum(1 for num in nums_list if num > 1)
-        
-        # Check the count to determine the winner
-        if count % 2 == 1:
+        winner = play_round(n)
+        if winner == "Maria":
             maria_wins += 1
-        else:
+        elif winner == "Ben":
             ben_wins += 1
 
     if maria_wins > ben_wins:
@@ -48,8 +25,81 @@ def isWinner(x, nums):
     elif ben_wins > maria_wins:
         return "Ben"
     else:
-        return None
+        return None  # Tie
 
-# Test the function with the given example
-print("Winner:", isWinner(3, [4, 5, 1]))  # Output should be "Ben"
-print("Winner:", isWinner(5, [2, 5, 1, 4, 3]))  # Output should be "Ben"
+def play_round(n):
+    """
+    Simulates a single round of the game.
+
+    Args:
+        n: The upper bound of the set of integers.
+
+    Returns:
+        The name of the winner of the round.
+    """
+
+    remaining_numbers = set(range(1, n + 1))
+    current_player = "Maria"
+
+    while remaining_numbers:
+        prime = find_optimal_prime(remaining_numbers)
+        if prime is None:
+            return current_player  # Other player loses
+
+        remaining_numbers -= remove_multiples(prime, remaining_numbers)
+        current_player = "Ben" if current_player == "Maria" else "Maria"
+
+    return None  # Tie
+
+def find_optimal_prime(numbers):
+    """
+    Finds the optimal prime number to choose from the set.
+
+    Args:
+        numbers: The set of remaining numbers.
+
+    Returns:
+        The optimal prime number to choose, or None if none exist.
+    """
+
+    # Implement optimal prime-picking strategy here
+    # Consider factors like:
+    # - Removing the most numbers
+    # - Preventing the opponent from getting a good move
+    # - Corner cases (e.g., when only a few numbers remain)
+
+    # Placeholder for now:
+    primes = [num for num in numbers if is_prime(num)]
+    return primes[0] if primes else None
+
+def remove_multiples(prime, numbers):
+    """
+    Removes the prime number and its multiples from the set.
+
+    Args:
+        prime: The prime number to remove.
+        numbers: The set of numbers to modify.
+
+    Returns:
+        A new set with the prime number and its multiples removed.
+    """
+
+    return {num for num in numbers if num % prime != 0}
+
+def is_prime(num):
+    """
+    Checks if a number is prime.
+
+    Args:
+        num: The number to check.
+
+    Returns:
+        True if the number is prime, False otherwise.
+    """
+
+    if num <= 1:
+        return False
+    for i in range(2, int(num**0.5) + 1):
+        if num % i == 0:
+            return False
+    return True
